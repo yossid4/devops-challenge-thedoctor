@@ -3,8 +3,10 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install gcc and update pip to avoid C-extension build issues
-RUN apt-get update && apt-get install -y gcc \
-    && pip install --upgrade pip
+RUN apt-get update \
+    && apt-get install -y gcc \
+    && pip install --upgrade pip \
+    && apt-get clean
 
 # Install dependencies first to leverage caching
 COPY requirements.txt .

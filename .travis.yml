@@ -15,12 +15,15 @@ script:
   - echo "🐳 Building Docker image..."
   - docker build -t $IMAGE_NAME .
   - echo "🧪 Running tests..."
-  - docker run --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-               --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-               --env AWS_REGION=$AWS_REGION \
-               --env DDB_TABLE=$DDB_TABLE \
-               --env CODE_NAME=$CODE_NAME \
-               $IMAGE_NAME python -m unittest discover tests || true
+  - |
+    docker run \
+      --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+      --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+      --env AWS_REGION=$AWS_REGION \
+      --env DDB_TABLE=$DDB_TABLE \
+      --env CODE_NAME=$CODE_NAME \
+      $IMAGE_NAME python -m unittest discover tests || true
+
 
 after_success:
   - echo "📦 Tagging image..."
