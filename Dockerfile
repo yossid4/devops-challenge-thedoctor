@@ -1,22 +1,21 @@
 FROM python:3.11-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy only requirements first (to leverage Docker cache)
+# Install gcc and update pip to avoid C-extension build issues
+RUN apt-get update && apt-get install -y gcc \
+    && pip install --upgrade pip
+
+# Install dependencies first to leverage caching
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
+    && apt-get remove -y gcc && apt-get autoremove -y
 
-# Install dependencies early (cached if unchanged)
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy rest of the app
+# Copy the rest of the app
 COPY . .
 
-# Add app folder to PYTHONPATH
 ENV PYTHONPATH=/app
 
-# Expose Flask port
 EXPOSE 5000
 
-# Run the Flask app
 CMD ["python", "app/main.py"]
