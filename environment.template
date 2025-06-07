@@ -1,18 +1,25 @@
 AWSTemplateFormatVersion: '2010-09-09'
+
 Parameters:
   InstanceType:
     Type: String
     Default: t3.micro
+
 Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: !Ref InstanceType
-      ImageId: ami-0abcdef1234567890
+      ImageId: <>  # Replace with a real public AMI in your region
+      KeyName: <>                 # <-- ADD this if you need SSH access
+      SecurityGroups:
+        - default                    # <-- Replace or define a proper security group
       UserData:
-        Fn::Base64: |
+        Fn::Base64: !Sub |
           #!/bin/bash
-          apt update && apt install docker.io -y
-          git clone <your_repo_url>
-          cd <project>
-          docker-compose up -d
+          apt update && apt install -y docker.io git
+          systemctl start docker
+          systemctl enable docker
+          git clone https://github.com/your-username/your-repo.git
+          cd your-repo
+          docker compose up -d
