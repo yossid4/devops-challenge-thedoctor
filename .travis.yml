@@ -1,5 +1,8 @@
 language: minimal
 
+os: linux
+dist: focal
+
 services:
   - docker
 
