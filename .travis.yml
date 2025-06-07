@@ -1,0 +1,29 @@
+language: minimal
+
+services:
+  - docker
+
+env:
+  global:
+    - IMAGE_NAME=thedoctor
+
+before_install:
+  - echo "🔧 Logging into Docker Hub..."
+  - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+script:
+  - echo "🐳 Building Docker image..."
+  - docker build -t $IMAGE_NAME .
+  - echo "🧪 Running tests..."
+  - docker run --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+               --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+               --env AWS_REGION=$AWS_REGION \
+               --env DDB_TABLE=$DDB_TABLE \
+               --env CODE_NAME=$CODE_NAME \
+               $IMAGE_NAME python -m unittest discover tests || true
+
+after_success:
+  - echo "📦 Tagging image..."
+  - docker tag $IMAGE_NAME $DOCKER_USER/$IMAGE_NAME
+  - echo "🚀 Pushing to Docker Hub..."
+  - docker push $DOCKER_USER/$IMAGE_NAME

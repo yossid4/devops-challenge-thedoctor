@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t3.micro
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: ami-0abcdef1234567890
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          apt update && apt install docker.io -y
+          git clone <your_repo_url>
+          cd <project>
+          docker-compose up -d
