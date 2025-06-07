@@ -1,3 +1,4 @@
+````markdown
 # DevOps Challenge – TheDoctor
 
 This project is a proof-of-concept (POC) Flask application that securely fetches a `secretCode` value from an AWS DynamoDB table and exposes it via a REST API.
@@ -31,47 +32,46 @@ cp .env.example .env
 
 # 2. Run the app locally
 docker-compose up
+````
+
 Then visit:
 
-http://localhost:5000/secret
+* `http://localhost:5000/secret`
+* `http://localhost:5000/health`
 
-http://localhost:5000/health
+## 🧪 Run Tests
 
-🧪 Run Tests
-bash
-Copy
-Edit
+```bash
 docker build -t thedoctor .
 docker run --env-file .env thedoctor python -m unittest discover tests
-📜 Endpoints
-Endpoint	Method	Description
-/secret	GET	Returns secret code from DynamoDB
-/health	GET	Returns container and repo info
+```
 
-🛡️ Security
-.env is ignored in Git (.gitignore)
+## 📜 Endpoints
 
-Travis CI uses secure environment variables
+| Endpoint  | Method | Description                       |
+| --------- | ------ | --------------------------------- |
+| `/secret` | GET    | Returns secret code from DynamoDB |
+| `/health` | GET    | Returns container and repo info   |
 
-Never expose AWS keys in the repo or image
+## 🛡️ Security
 
-📄 Files
-.env.example – example config
+* `.env` is **ignored in Git** (`.gitignore`)
+* Travis CI uses **secure environment variables**
+* Never expose AWS keys in the repo or image
 
-Dockerfile – production-ready build
+## 📄 Files
 
-docker-compose.yml – dev environment
+* `.env.example` – example config
+* `Dockerfile` – production-ready build
+* `docker-compose.yml` – dev environment
+* `.travis.yml` – CI/CD configuration
+* `verification.sh` – endpoint validation script
 
-.travis.yml – CI/CD configuration
+## ✅ License
 
-verification.sh – endpoint validation script
-
-✅ License
 MIT License
 
-yaml
-Copy
-Edit
+````
 
 ---
 
@@ -89,54 +89,67 @@ Follow these steps to run, test, and deploy the project.
 1. **Copy the environment template:**
    ```bash
    cp .env.example .env
-Edit .env with your real AWS credentials:
+````
 
-env
-Copy
-Edit
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-Run using Docker Compose:
+2. **Edit `.env` with your real AWS credentials:**
 
-bash
-Copy
-Edit
-docker-compose up
-🧪 Running Unit Tests
+   ```env
+   AWS_ACCESS_KEY_ID=...
+   AWS_SECRET_ACCESS_KEY=...
+   ```
+
+3. **Run using Docker Compose:**
+
+   ```bash
+   docker-compose up
+   ```
+
+---
+
+## 🧪 Running Unit Tests
+
 To run unit tests in a container:
 
-bash
-Copy
-Edit
+```bash
 docker build -t thedoctor .
 docker run --env-file .env thedoctor python -m unittest discover tests
-🔁 Rebuild If You Change Code
-bash
-Copy
-Edit
+```
+
+---
+
+## 🔁 Rebuild If You Change Code
+
+```bash
 docker-compose build
-🧪 Validate App (Manual)
+```
+
+---
+
+## 🧪 Validate App (Manual)
+
 After running:
 
-bash
-Copy
-Edit
+```bash
 curl http://localhost:5000/secret
 curl http://localhost:5000/health
+```
+
 Or run:
 
-bash
-Copy
-Edit
+```bash
 bash verification.sh
-📦 Environment Variables Reference
-Key	Description
-AWS_ACCESS_KEY_ID	Your AWS access key
-AWS_SECRET_ACCESS_KEY	Your AWS secret key
-AWS_REGION	AWS region (e.g. eu-west-1)
-DDB_TABLE	DynamoDB table name
-CODE_NAME	Key to query in the table
+```
 
-yaml
-Copy
-Edit
+---
+
+## 📦 Environment Variables Reference
+
+| Key                     | Description                   |
+| ----------------------- | ----------------------------- |
+| `AWS_ACCESS_KEY_ID`     | Your AWS access key           |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS secret key           |
+| `AWS_REGION`            | AWS region (e.g. `eu-west-1`) |
+| `DDB_TABLE`             | DynamoDB table name           |
+| `CODE_NAME`             | Key to query in the table     |
+
+---
