@@ -1,106 +1,116 @@
 ```markdown
-# 🧩 Troubleshooting Log
+# 🛠️ Troubleshooting Guide
 
-This document lists common issues encountered during the development and CI/CD process, along with their solutions.
+This file documents common issues encountered while building, testing, or deploying this project using Docker and Travis CI.
 
 ---
 
-## 1. 🔒 AccessDeniedException on DynamoDB
+## 🚫 1. APT Post-Invoke Error
 
-**Issue:**
+**Error:**
 ```
 
-The provided key element does not match the schema
-
-````
-
-**Cause:** Using `code_name` instead of correct camelCase `codeName` key. Also missing sort key if required.
-
-**Fix:**
-- Confirm table schema (e.g., via `describe-table`)
-- Use `codeName` and correct key structure in `get_item`
-
----
-
-## 2. 🐍 `KeyError: 'secret_code'` when accessing `/secret`
-
-**Cause:** The DynamoDB item used `"secretCode"` instead of `"secret_code"` (case-sensitive mismatch)
-
-**Fix:**
-Update code to:
-```python
-return item["secretCode"]
-````
-
----
-
-## 3. 🐳 Docker build failed on Travis with pip-related error
-
-**Issue:**
+E: Problem executing scripts APT::Update::Post-Invoke ...
+E: Sub-process returned an error code
 
 ```
+
+**Cause:**
+Occurs when running `apt-get update` on minimal base images (`python:3.11-slim`) due to post-invoke cleanup scripts.
+
+**Solution:**
+- Switch from `python:3.11-slim` to full `python:3.11` base image.
+- This avoids needing to install `gcc`, libc-dev, or handle broken APT behavior manually.
+
+---
+
+## 🧵 2. RuntimeError: can't start new thread
+
+**Error:**
+```
+
 RuntimeError: can't start new thread
-```
 
-**Cause:** Travis CI's free tier build container has limited memory. Some Python packages like `MarkupSafe` or `cryptography` require compiling native C extensions from source.
+````
 
-**Fix:**
-Install `gcc` before running `pip install`:
+**Cause:**
+`pip` uses threaded progress bars that can crash in low-resource Travis environments.
 
-```dockerfile
-RUN apt-get update && apt-get install -y gcc
-```
+**Solution:**
+- Upgrade the Travis image to a newer distro:
+  ```yaml
+  dist: focal
+````
 
-**Optional:** Clean up after install to reduce image size:
+* Disable rich pip progress bar inside the Dockerfile:
 
-```dockerfile
-RUN apt-get update && apt-get install -y gcc \
-    && pip install --no-cache-dir -r requirements.txt \
-    && apt-get remove -y gcc && apt-get autoremove -y
-```
+  ```dockerfile
+  ENV PIP_NO_PROGRESS_BAR=off
+  ```
 
 ---
 
-## 4. ❌ Travis CI build failed with "invalid reference format"
+## 🐳 3. Docker Build Fails on Travis
 
-**Cause:** Incorrect line continuation in `docker run` command inside `.travis.yml`
+**Error:**
 
-**Fix:** Break multi-line `docker run` into separate lines:
+```
+docker: Error response from daemon: pull access denied...
+```
+
+**Cause:**
+
+* Travis fails to build or run the image because `docker build` failed earlier.
+* This often stems from broken APT installs, missing tools, or incomplete requirements.
+
+**Solution:**
+
+* Fix image issues (see above), then ensure the Travis job fails if `docker build` fails:
+
+  ```yaml
+  script:
+    - docker build -t $IMAGE_NAME . || exit 1
+  ```
+
+---
+
+## 🔒 4. Travis CI Asking for Plan on Public Repo
+
+**Issue:**
+Despite using a public repo, Travis prompts you to select a paid plan.
+
+**Cause:**
+Travis now uses usage-based pricing. Public repos still need a plan selected (even if \$0).
+
+**Solution:**
+
+* Log in to [Travis CI](https://travis-ci.com/account/usage)
+* Under “Plan,” ensure you’ve selected the free tier for public repositories.
+
+---
+
+## 🧪 5. Tests Don't Run – Image Not Found
+
+**Error:**
+
+```
+Unable to find image 'thedoctor:latest' locally
+```
+
+**Cause:**
+`docker build` failed, but the test step still runs.
+
+**Solution:**
+Make sure build failure stops the pipeline:
 
 ```yaml
-- docker run \
-    --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-    --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-    ...
+script:
+  - docker build -t $IMAGE_NAME . || exit 1
+  - docker run ...  # only runs if build succeeded
 ```
 
 ---
 
-## 5. 🕸️ Travis CI account error: "Owner not on a new pricing"
+*Last updated: June 2025*
 
-**Cause:** Travis CI requires manual approval or a request to enable credits for public repos.
-
-**Fix:**
-
-* Go to: [https://app.travis-ci.com/account/plan](https://app.travis-ci.com/account/plan)
-* Click **"Request"** for public repo access
-* Or email: `support@travis-ci.com` with your repo link
-
----
-
-## 6. 🧪 Tests not failing the build in Travis
-
-**Cause:** `|| true` in test command disables build failure on test errors
-
-**Fix:** Remove `|| true` from `.travis.yml`:
-
-```yaml
-- docker run ... python -m unittest discover tests
-```
-
----
-
-```
-
-Let me know if you'd like me to generate or update the file directly in a zipped project structure.
 ```

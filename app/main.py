@@ -11,8 +11,8 @@ def secret():
 def health():
     return jsonify({
         "status": "healthy",
-        "container": "<YOUR_DOCKER_HUB_LINK>",
-        "project": "<YOUR_GITHUB_LINK>"
+        "container": "https://hub.docker.com/repository/docker/yossid4/thedoctor/general (private)",
+        "project": "https://github.com/yossid4/devops-challenge-thedoctor"
     })
 
 if __name__ == "__main__":
