@@ -22,8 +22,7 @@ script:
       --env AWS_REGION=$AWS_REGION \
       --env DDB_TABLE=$DDB_TABLE \
       --env CODE_NAME=$CODE_NAME \
-      $IMAGE_NAME python -m unittest discover tests || true
-
+      $IMAGE_NAME python -m unittest discover tests
 
 after_success:
   - echo "📦 Tagging image..."
